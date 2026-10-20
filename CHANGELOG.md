@@ -34,5 +34,5 @@ First release.
 - Local media cache with per-episode clearing, and an RTX Video diagnostics
   panel with high-performance GPU selection on hybrid laptops.
 
-[Unreleased]: https://github.com/twistied/twist/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/twistied/twist/releases/tag/v0.1.0
+[Unreleased]: https://github.com/twi-st/twist/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/twi-st/twist/releases/tag/v0.1.0

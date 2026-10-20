@@ -5,7 +5,7 @@
  */
 
 (() => {
-  const REPO = 'twistied/twist';
+  const REPO = 'twi-st/twist';
   const API = `https://api.github.com/repos/${REPO}/releases/latest`;
 
   // Fill in the repository links from one place, so renaming the repo only
