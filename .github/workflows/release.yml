@@ -111,9 +111,14 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: '0'
         run: |
-          wails3 generate syso -arch $env:GOARCH -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out "wails_windows_$env:GOARCH.syso"
+          # The syso generator resolves -icon/-manifest/-info relative to the
+          # working directory, so run it from build/ (where they live) and write
+          # the .syso next to main.go.
+          Push-Location build
+          wails3 generate syso -arch $env:GOARCH -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out "../wails_windows_$env:GOARCH.syso"
+          Pop-Location
           go build -tags production -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o "${{ matrix.artifact }}" .
-          Remove-Item "wails_windows_$env:GOARCH.syso" -Force
+          Remove-Item "wails_windows_$env:GOARCH.syso" -Force -ErrorAction SilentlyContinue
 
       - name: Build macOS app
         if: runner.os == 'macOS'
