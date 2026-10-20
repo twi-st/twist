@@ -127,7 +127,13 @@ jobs:
         env:
           GOARCH: ${{ matrix.goarch }}
         run: |
-          # NSIS ships with the windows-latest image.
+          # NSIS is not on the runner image; Chocolatey is.
+          if (-not (Get-Command makensis -ErrorAction SilentlyContinue)) {
+            choco install nsis -y --no-progress
+            $nsis = "${env:ProgramFiles(x86)}\NSIS"
+            if (Test-Path $nsis) { $env:PATH = "$nsis;$env:PATH" }
+          }
+
           $argFlag = if ($env:GOARCH -eq 'amd64') { 'AMD64' } else { 'ARM64' }
           Push-Location build/windows/nsis
           wails3 generate webview2bootstrapper -dir "$PWD"
