@@ -7,12 +7,12 @@ name: "Twist"
 arch: ${GOARCH}
 platform: "linux"
 version: "0.1.0"
-section: "default"
+section: "video"
 priority: "extra"
 maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
-description: "Ad-free anime streaming and discussion"
+description: "A desktop app for watching anime. Ad-free, local-first."
 vendor: "Twist"
-homepage: "https://wails.io"
+homepage: "https://twi-st.github.io/twist/"
 license: "MIT"
 release: "1"
 

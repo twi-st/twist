@@ -117,8 +117,24 @@ jobs:
           Push-Location build
           wails3 generate syso -arch $env:GOARCH -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out "../wails_windows_$env:GOARCH.syso"
           Pop-Location
-          go build -tags production -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o "${{ matrix.artifact }}" .
+          go build -tags production -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o "bin/Twist.exe" .
           Remove-Item "wails_windows_$env:GOARCH.syso" -Force -ErrorAction SilentlyContinue
+          Copy-Item "bin/Twist.exe" "${{ matrix.artifact }}"
+
+      - name: Build Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          # NSIS ships with the windows-latest image.
+          $argFlag = if ($env:GOARCH -eq 'amd64') { 'AMD64' } else { 'ARM64' }
+          Push-Location build/windows/nsis
+          wails3 generate webview2bootstrapper -dir "$PWD"
+          makensis "-DARG_WAILS_${argFlag}_BINARY=${{ github.workspace }}\bin\Twist.exe" project.nsi
+          Pop-Location
+          # The installer task names its output from INFO_PROJECTNAME-ARCH.
+          Move-Item "bin/Twist-$env:GOARCH-installer.exe" "Twist-windows-$env:GOARCH-setup.exe"
 
       - name: Build macOS app
         if: runner.os == 'macOS'
@@ -141,6 +157,8 @@ jobs:
             --file-icon "build/darwin/dmg-file-icon.icns" \
             --window-width 540 --window-height 380
           mv bin/Twist.dmg "${{ matrix.artifact }}"
+          # Keep the .app alongside the disk image for people who prefer it.
+          ditto -c -k --sequesterRsrc --keepParent "bin/Twist.app" "Twist-macos-${{ matrix.goarch }}.app.zip"
 
       - name: Build Linux binary
         if: runner.os == 'Linux'
@@ -150,7 +168,7 @@ jobs:
           CGO_ENABLED: '1'
         run: |
           go build -tags production -trimpath -buildvcs=false -ldflags="-s -w" -o "bin/Twist" .
-          mv bin/Twist "${{ matrix.artifact }}"
+          cp bin/Twist "${{ matrix.artifact }}"
 
       - name: Build Linux packages
         if: runner.os == 'Linux'
@@ -158,12 +176,38 @@ jobs:
         env:
           GOARCH: ${{ matrix.goarch }}
         run: |
-          # The deb/rpm generators take the binary name and read the desktop
-          # entry from build/linux; a missing tool must not fail the release.
+          # nfpm needs the desktop entry and an explicit config. The task file
+          # generates the .desktop from the app name; doing it here keeps the
+          # workflow self-contained.
+          wails3 generate .desktop \
+            -name "Twist" -exec "Twist" -icon "Twist" \
+            -outputfile "build/linux/Twist.desktop" \
+            -categories "AudioVideo;Video;"
           mkdir -p dist
-          wails3 tool package --format deb --name "Twist" --out "dist" || echo "deb packaging skipped"
-          wails3 tool package --format rpm --name "Twist" --out "dist" || echo "rpm packaging skipped"
+          wails3 tool package --format deb --name "Twist" \
+            --config build/linux/nfpm/nfpm.yaml --out dist
+          wails3 tool package --format rpm --name "Twist" \
+            --config build/linux/nfpm/nfpm.yaml --out dist
           ls -la dist
+
+      - name: Build Linux AppImage
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          # AppImage is the portable option for Linux; it needs no install step.
+          mkdir -p build/linux/appimage
+          cp bin/Twist build/linux/appimage/Twist
+          cp build/appicon.png build/linux/appimage/Twist.png
+          wails3 generate appimage \
+            -binary "Twist" \
+            -icon "Twist.png" \
+            -desktopfile "../Twist.desktop" \
+            -outputdir "$PWD" \
+            -builddir "build/linux/appimage/build" \
+            || true
+          ls -la *.AppImage 2>/dev/null || echo "appimage generation failed"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -171,6 +215,9 @@ jobs:
           name: ${{ matrix.name }}
           path: |
             ${{ matrix.artifact }}
+            Twist-windows-*-setup.exe
+            Twist-macos-*.app.zip
+            *.AppImage
             dist/*.deb
             dist/*.rpm
           if-no-files-found: warn

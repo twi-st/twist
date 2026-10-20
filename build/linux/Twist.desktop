@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Twist
+Exec=Twist
+Icon=Twist
+Categories=AudioVideo;Video;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=false
