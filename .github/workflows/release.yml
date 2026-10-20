@@ -194,6 +194,13 @@ jobs:
             --config build/linux/nfpm/nfpm.yaml --out dist
           wails3 tool package --format rpm --name "Twist" \
             --config build/linux/nfpm/nfpm.yaml --out dist
+          # Both Linux jobs emit Twist.deb/Twist.rpm, and the publish job merges
+          # artifacts by name, so the second one would overwrite the first.
+          # Rename per architecture before uploading.
+          for f in dist/*.deb dist/*.rpm; do
+            [ -e "$f" ] || continue
+            mv "$f" "${f%.*}-${{ matrix.goarch }}.${f##*.}"
+          done
           ls -la dist
 
       - name: Build Linux AppImage
@@ -206,14 +213,21 @@ jobs:
           mkdir -p build/linux/appimage
           cp bin/Twist build/linux/appimage/Twist
           cp build/appicon.png build/linux/appimage/Twist.png
+          cd build/linux/appimage
           wails3 generate appimage \
             -binary "Twist" \
             -icon "Twist.png" \
             -desktopfile "../Twist.desktop" \
-            -outputdir "$PWD" \
-            -builddir "build/linux/appimage/build" \
-            || true
-          ls -la *.AppImage 2>/dev/null || echo "appimage generation failed"
+            -outputdir "${{ github.workspace }}" \
+            -builddir "${{ github.workspace }}/build/linux/appimage/build" \
+            || echo "appimage generation failed"
+          cd "${{ github.workspace }}"
+          # Name it per architecture too: both Linux jobs produce one.
+          for f in *.AppImage; do
+            [ -e "$f" ] || continue
+            mv "$f" "Twist-linux-${{ matrix.goarch }}.AppImage"
+          done
+          ls -la *.AppImage 2>/dev/null || echo "no appimage produced"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
