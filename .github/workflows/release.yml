@@ -258,6 +258,17 @@ jobs:
       - name: List artifacts
         run: ls -la artifacts
 
+      - name: Flatten packages
+        run: |
+          # The Linux jobs upload deb/rpm inside a dist/ folder, which survives
+          # the merge. Move them next to everything else so the release glob
+          # (and the checksums) see them.
+          if [ -d artifacts/dist ]; then
+            mv artifacts/dist/* artifacts/ || true
+            rmdir artifacts/dist || true
+          fi
+          ls -la artifacts
+
       - name: Generate checksums
         run: |
           cd artifacts
