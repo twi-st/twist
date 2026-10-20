@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .flame { transform-origin: 60px 104px; animation: flicker .5s ease-in-out infinite alternate; }
+    .core { transform-origin: 60px 104px; animation: flicker .4s .15s ease-in-out infinite alternate; }
+    @keyframes flicker { from { transform: scaleY(.92) scaleX(1.06); } to { transform: scaleY(1.08) scaleX(.94); } }
+  </style>
+  <path class="flame" d="M60 10 C 78 38 94 52 94 74 a34 34 0 0 1 -68 0 C 26 52 42 38 60 10 Z" fill="#f97316" />
+  <path class="core" d="M60 48 C 69 60 76 67 76 79 a16 16 0 0 1 -32 0 C 44 67 51 60 60 48 Z" fill="#fbbf24" />
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .face { transform-origin: 60px 60px; animation: chuckle .8s ease-in-out infinite; }
+    .drop { transform-box: fill-box; transform-origin: center; animation: drip .9s ease-in infinite; }
+    .d2 { animation-delay: .45s; }
+    @keyframes chuckle { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-3px) rotate(-3deg); } }
+    @keyframes drip { 0% { transform: translateY(0) scale(.7); opacity: 1; } 100% { transform: translateY(16px) scale(1); opacity: 0; } }
+  </style>
+  <g class="face">
+    <circle cx="60" cy="60" r="40" fill="#fbbf24" />
+    <path d="M34 54 q9 -11 18 0" stroke="#1d1f22" stroke-width="5" fill="none" stroke-linecap="round" />
+    <path d="M68 54 q9 -11 18 0" stroke="#1d1f22" stroke-width="5" fill="none" stroke-linecap="round" />
+    <path d="M38 72 a22 22 0 0 0 44 0 Z" fill="#1d1f22" />
+    <path d="M48 86 a14 9 0 0 0 24 0 Z" fill="#e2554f" />
+  </g>
+  <path class="drop" d="M26 50 q5 8 5 12 a5 5 0 0 1 -10 0 q0 -4 5 -12 Z" fill="#60a5fa" />
+  <path class="drop d2" d="M94 50 q5 8 5 12 a5 5 0 0 1 -10 0 q0 -4 5 -12 Z" fill="#60a5fa" />
+</svg>

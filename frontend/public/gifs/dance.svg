@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .n { animation: bob 0.9s ease-in-out infinite; }
+    .n2 { animation-delay: .3s; }
+    .n3 { animation-delay: .6s; }
+    @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  </style>
+  <g class="n">
+    <ellipse cx="34" cy="80" rx="12" ry="9" fill="#f472b6" />
+    <rect x="43" y="38" width="5" height="42" rx="2" fill="#f472b6" />
+    <path d="M48 38 q15 5 11 20 q-3 -9 -11 -13 Z" fill="#f472b6" />
+  </g>
+  <g class="n n2">
+    <ellipse cx="62" cy="86" rx="10" ry="7.5" fill="#60a5fa" />
+    <rect x="69" y="50" width="4.5" height="36" rx="2" fill="#60a5fa" />
+    <path d="M73.5 50 q13 4 9.5 17 q-2.5 -8 -9.5 -11 Z" fill="#60a5fa" />
+  </g>
+  <g class="n n3">
+    <ellipse cx="90" cy="76" rx="11" ry="8.5" fill="#fbbf24" />
+    <rect x="98" y="36" width="5" height="40" rx="2" fill="#fbbf24" />
+    <path d="M103 36 q14 5 10 19 q-3 -9 -10 -12 Z" fill="#fbbf24" />
+  </g>
+</svg>

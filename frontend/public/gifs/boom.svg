@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .burst { transform-origin: 60px 60px; animation: boom .9s ease-in-out infinite; }
+    .inner { transform-origin: 60px 60px; animation: spin 7s linear infinite; }
+    .dot { transform-box: fill-box; transform-origin: center; animation: shoot 1s ease-out infinite; }
+    .d2 { animation-delay: .2s; }
+    .d3 { animation-delay: .4s; }
+    @keyframes boom {
+      0%, 100% { transform: scale(.92) rotate(0deg); }
+      50% { transform: scale(1.06) rotate(10deg); }
+    }
+    @keyframes spin { to { transform: rotate(-360deg); } }
+    @keyframes shoot {
+      0% { transform: translate(0, 0) scale(.4); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translate(26px, -32px) scale(1); opacity: 0; }
+    }
+  </style>
+  <polygon class="burst" points="106,60 80.8,72 83,99.8 60,106 37,99.8 39.2,72 14,60 39.2,48 37,20.2 60,14 83,20.2 80.8,48" fill="#f97316" />
+  <polygon class="inner" points="85.3,60 71.4,66.6 72.65,81.9 60,85.3 47.35,81.9 48.6,66.6 34.7,60 48.6,53.4 47.35,38.1 60,34.7 72.65,38.1 71.4,53.4" fill="#fbbf24" />
+  <circle class="dot" cx="74" cy="40" r="5" fill="#fbbf24" />
+  <rect class="dot d2" x="82" y="58" width="8" height="8" rx="2" fill="#f472b6" />
+  <circle class="dot d3" cx="66" cy="74" r="4" fill="#60a5fa" />
+</svg>

@@ -1,0 +1,212 @@
+name: Release
+
+# Builds Twist for every supported platform and attaches the installers to a
+# GitHub release. Triggered by pushing a version tag (v0.1.0, v1.2.3, ...).
+#
+# Linux and macOS builds need CGO (GTK / Cocoa), so each target is built on its
+# own native runner rather than cross-compiled. Windows is CGO-free and builds
+# natively too, which keeps every artifact reproducible on a standard runner.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GO_VERSION: '1.25'
+  NODE_VERSION: '22'
+  WAILS_VERSION: 'v3.0.0-beta.16'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-amd64
+            os: windows-latest
+            goarch: amd64
+            artifact: Twist-windows-amd64.exe
+          - name: windows-arm64
+            os: windows-latest
+            goarch: arm64
+            artifact: Twist-windows-arm64.exe
+          - name: macos-arm64
+            os: macos-latest
+            goarch: arm64
+            artifact: Twist-macos-arm64.dmg
+          - name: macos-amd64
+            os: macos-15-intel
+            goarch: amd64
+            artifact: Twist-macos-amd64.dmg
+          - name: linux-amd64
+            os: ubuntu-24.04
+            goarch: amd64
+            artifact: Twist-linux-amd64
+          - name: linux-arm64
+            os: ubuntu-24.04-arm
+            goarch: arm64
+            artifact: Twist-linux-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-dev libwebkit2gtk-4.1-dev \
+            libgtk-4-dev libwebkitgtk-6.0-dev \
+            pkg-config
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
+
+      - name: Add Go bin to PATH
+        shell: bash
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --dir frontend build
+
+      - name: Build Windows binary
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          GOOS: windows
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          wails3 generate syso -arch $env:GOARCH -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out "wails_windows_$env:GOARCH.syso"
+          go build -tags production -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o "${{ matrix.artifact }}" .
+          Remove-Item "wails_windows_$env:GOARCH.syso" -Force
+
+      - name: Build macOS app
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '1'
+          MACOSX_DEPLOYMENT_TARGET: '12.0'
+        run: |
+          wails3 generate icons -input build/appicon.png -macfilename build/darwin/icons.icns -windowsfilename build/windows/icon.ico
+          go build -tags production -trimpath -buildvcs=false -ldflags="-s -w" -o "bin/Twist" .
+          mkdir -p "bin/Twist.app/Contents/MacOS" "bin/Twist.app/Contents/Resources"
+          cp build/darwin/icons.icns "bin/Twist.app/Contents/Resources/"
+          cp "bin/Twist" "bin/Twist.app/Contents/MacOS/Twist"
+          cp build/darwin/Info.plist "bin/Twist.app/Contents/Info.plist"
+          codesign --force --deep --sign - "bin/Twist.app"
+          wails3 tool package --format dmg --name "Twist" --out "bin" \
+            --background "build/darwin/dmg-background.png" \
+            --volume-icon "build/darwin/icons.icns" \
+            --file-icon "build/darwin/dmg-file-icon.icns" \
+            --window-width 540 --window-height 380
+          mv bin/Twist.dmg "${{ matrix.artifact }}"
+
+      - name: Build Linux binary
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '1'
+        run: |
+          go build -tags production -trimpath -buildvcs=false -ldflags="-s -w" -o "bin/Twist" .
+          mv bin/Twist "${{ matrix.artifact }}"
+
+      - name: Build Linux packages
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          # The deb/rpm generators take the binary name and read the desktop
+          # entry from build/linux; a missing tool must not fail the release.
+          mkdir -p dist
+          wails3 tool package --format deb --name "Twist" --out "dist" || echo "deb packaging skipped"
+          wails3 tool package --format rpm --name "Twist" --out "dist" || echo "rpm packaging skipped"
+          ls -la dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: |
+            ${{ matrix.artifact }}
+            dist/*.deb
+            dist/*.rpm
+          if-no-files-found: warn
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la artifacts
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          sha256sum * > SHA256SUMS.txt 2>/dev/null || true
+          cat SHA256SUMS.txt
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Twist ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: true
+          generate_release_notes: true
+          body: |
+            See the [README](https://github.com/${{ github.repository }}#readme) for what this is and how to install it.
+
+            **Unsigned builds.** Windows SmartScreen and macOS Gatekeeper may warn
+            about an unknown publisher; verify the download against
+            `SHA256SUMS.txt` and open the app manually the first time.
+
+            **Twist is a player, not a source.** It ships no content and no
+            credentials. You are responsible for how you use it.
+          files: |
+            artifacts/*

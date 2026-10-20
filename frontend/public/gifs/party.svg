@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .pop { transform-origin: 52px 84px; animation: pop 1s ease-in-out infinite; }
+    .bit { transform-box: fill-box; transform-origin: center; animation: fly 1.4s ease-out infinite; }
+    .b1 { animation-delay: 0s; }
+    .b2 { animation-delay: .18s; }
+    .b3 { animation-delay: .36s; }
+    .b4 { animation-delay: .54s; }
+    .b5 { animation-delay: .72s; }
+    .b6 { animation-delay: .9s; }
+    @keyframes pop { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-9deg); } }
+    @keyframes fly {
+      0% { transform: translate(0, 0) scale(.3); opacity: 0; }
+      25% { opacity: 1; }
+      100% { transform: translate(30px, -48px) scale(1); opacity: 0; }
+    }
+  </style>
+  <path class="pop" d="M22 104 L50 70 L64 98 Z" fill="#60a5fa" />
+  <path class="pop" d="M22 104 L50 70 L40 106 Z" fill="#3b82f6" />
+  <circle class="bit b1" cx="58" cy="60" r="5" fill="#fbbf24" />
+  <rect class="bit b2" x="70" y="52" width="8" height="8" rx="2" fill="#f472b6" />
+  <circle class="bit b3" cx="80" cy="70" r="4" fill="#34d399" />
+  <rect class="bit b4" x="60" y="42" width="7" height="7" rx="2" fill="#e2554f" />
+  <circle class="bit b5" cx="88" cy="48" r="4" fill="#60a5fa" />
+  <rect class="bit b6" x="44" y="52" width="8" height="8" rx="2" fill="#fbbf24" />
+</svg>

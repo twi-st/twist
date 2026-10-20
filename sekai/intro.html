@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Twist · Intro</title>
+<style>
+  :root { color-scheme: dark; --accent:#d4433c; --bg:#0b0d10; --text:#e7ecf3; --muted:#7f8794; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin:0; min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; padding:24px; background:var(--bg); color:var(--text);
+    font:15px/1.5 system-ui,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+
+  .player { position:relative; width:min(96vw,1080px); }
+  .player.fs { width:100%; height:100%; display:grid; place-items:center; background:#000; }
+  .screen {
+    position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden;
+    border-radius:14px; isolation:isolate; cursor:pointer;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.06);
+  }
+  .player.fs .screen { width:min(100vw,calc(100vh*16/9)); border-radius:0; box-shadow:none; }
+
+  /* mark + wordmark */
+  .endstack, .poster {
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:clamp(6px,2.2vh,22px); pointer-events:none;
+  }
+  #logoWrap { width:40%; }
+  .logo-svg { display:block; width:100%; height:auto; overflow:visible; }
+
+  .wordmark { display:flex; line-height:1; font-weight:800; color:#f2f4f6; white-space:nowrap; }
+  .ch { display:inline-block; overflow:hidden; padding:.1em 0; }
+  .ch > span { display:inline-block; will-change:transform; }
+
+  /* light sweep */
+  .beam {
+    position:absolute; top:-25%; left:0; width:15%; height:150%; pointer-events:none; opacity:0;
+    mix-blend-mode:screen; filter:blur(2px); will-change:transform,opacity;
+    background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.05) 32%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.05) 68%,rgba(255,255,255,0) 100%);
+  }
+
+  /* idle poster */
+  .poster { opacity:0; transition:opacity .4s ease; }
+  .screen.poster-on .poster { opacity:1; }
+  .poster-mark { width:40%; opacity:.3; }
+  .poster-word { font-weight:800; letter-spacing:.42em; text-indent:.42em; color:#f2f4f6; opacity:.3; }
+
+  /* player UI */
+  .ui { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; pointer-events:none; }
+  .bigplay {
+    position:absolute; left:50%; top:50%; width:clamp(56px,13%,104px); aspect-ratio:1; display:grid; place-items:center;
+    border-radius:50%; cursor:pointer; color:#fff; background:rgba(10,12,15,.55); border:1px solid rgba(255,255,255,.18);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); opacity:0; pointer-events:none;
+    transform:translate(-50%,-50%) scale(.92); transition:opacity .25s,transform .25s,background .2s,border-color .2s;
+  }
+  .screen:not(.playing) .bigplay { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  .bigplay:hover { background:rgba(212,67,60,.88); border-color:transparent; }
+  .bigplay svg { width:40%; height:40%; }
+  .bigplay[data-icon="play"] svg { margin-left:6%; }
+
+  .chrome {
+    pointer-events:none; opacity:0; user-select:none; transition:opacity .25s;
+    padding:clamp(26px,9%,62px) clamp(10px,3%,26px) clamp(8px,2.4%,18px);
+    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.5) 45%,rgba(0,0,0,.86) 100%);
+  }
+  .screen.showui .chrome { opacity:1; pointer-events:auto; }
+  .bar { position:relative; height:16px; display:flex; align-items:center; cursor:pointer; touch-action:none; }
+  .bar-track, .bar-fill { position:absolute; left:0; height:4px; border-radius:99px; }
+  .bar-track { right:0; background:rgba(255,255,255,.18); }
+  .bar-fill { width:0; background:var(--accent); }
+  .bar-knob {
+    position:absolute; left:0; width:12px; height:12px; border-radius:50%; background:#fff; opacity:0;
+    transform:translateX(-50%); transition:opacity .15s; box-shadow:0 0 8px rgba(0,0,0,.6);
+  }
+  .bar:hover .bar-knob { opacity:1; }
+  .row { display:flex; align-items:center; gap:clamp(4px,1.6%,14px); margin-top:clamp(4px,1.4%,10px); }
+  .ctrl {
+    all:unset; display:grid; place-items:center; cursor:pointer; width:clamp(28px,4.4%,38px); aspect-ratio:1;
+    border-radius:8px; color:#e7ecf3; transition:background .15s;
+  }
+  .ctrl:hover { background:rgba(255,255,255,.14); }
+  .ctrl:focus-visible, .bigplay:focus-visible, .bar:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  .ctrl svg { width:20px; height:20px; }
+  .spacer { flex:1; }
+  .time { margin-left:4px; font-size:clamp(11px,2.4%,14px); font-variant-numeric:tabular-nums; color:#c7cfda; }
+
+  .hint { margin:0; color:var(--muted); font-size:13px; text-align:center; }
+  .hint kbd { font:inherit; padding:1px 6px; color:#cfd6e0; background:#171b21; border:1px solid #262c35; border-radius:5px; }
+</style>
+</head>
+
+<body>
+<div class="player" id="player">
+  <div class="screen poster-on showui" id="screen">
+    <div class="endstack">
+      <div id="logoWrap"></div>
+      <div class="wordmark" id="wordmark" aria-label="TWIST"></div>
+    </div>
+
+    <div class="beam" id="beam"></div>
+
+    <div class="poster">
+      <div class="poster-mark" id="posterMark"></div>
+      <div class="poster-word" id="posterWord">TWIST</div>
+    </div>
+
+    <div class="ui">
+      <button class="bigplay" id="bigPlay" data-icon="play" aria-label="Play intro"></button>
+      <div class="chrome">
+        <div class="bar" id="bar" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100">
+          <div class="bar-track"></div><div class="bar-fill" id="barFill"></div><div class="bar-knob" id="barKnob"></div>
+        </div>
+        <div class="row">
+          <button class="ctrl" id="playBtn" title="Play / Pause"></button>
+          <button class="ctrl" id="replayBtn" title="Replay"></button>
+          <span class="time"><span id="cur">0:00</span> / <span id="dur">0:00</span></span>
+          <span class="spacer"></span>
+          <button class="ctrl" id="muteBtn" title="Toggle sound"></button>
+          <button class="ctrl" id="fsBtn" title="Fullscreen"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="hint">Press play · <kbd>Space</kbd> play/pause · <kbd>←</kbd> <kbd>→</kbd> seek · <kbd>M</kbd> mute · <kbd>F</kbd> fullscreen</p>
+
+<script>
+(() => {
+  'use strict';
+
+  const ACCENT = '#d4433c';
+  const TOTAL = 4.8;
+  const RAD = Math.PI / 180;
+  const BETA = 63.435;              // gray arrow's tilt, and how far the red leg swings
+
+  /* ============================================================
+     The mark.
+     Gray ^  : one polygon, a thin line that opens into the arrow.
+     Red     : a bar (the line left behind) + a leg that swings out of it.
+     Every final shape is the original logo, point for point.
+  ============================================================ */
+  const GRAY = {
+    dot:   [[4.9,.1],[4.9,0],[4.9,.1],[5.1,.1],[5.1,0],[5.1,.1]],
+    line:  [[4.9,10],[4.9,0],[4.9,10],[5.1,10],[5.1,0],[5.1,10]],
+    arrow: [[0,10],[5,0],[10,10],[9,10],[5,2],[1,10]]
+  };
+  const BAR = [[6,0],[16,0],[15.5,1],[7.5,1]];
+  const PV = [6.75, .5];            // the leg swings around this point
+
+  /* leg in its own frame (along, across) -> rigid rotation, so its thickness never collapses.
+     q=0 lies flat inside the bar, q=1 is the original red leg. */
+  function leg(q) {
+    const th = BETA * q * RAD, c = Math.cos(th), s = Math.sin(th);
+    const far = 9.25 + 1.147 * q, farIn = 8.58 + 1.147 * q;
+    const P = (a, b) => [PV[0] + a * c + b * s, PV[1] + a * s - b * c];
+    return [P(-.7826, -.447), P(far, -.447), P(farIn, .447), P(.7826, .447)];
+  }
+
+  const poly = pts => pts.map(p => p[0].toFixed(3) + ',' + p[1].toFixed(3)).join(' ');
+  const mix = (a, b, p) => a.map((v, i) => [v[0] + (b[i][0] - v[0]) * p, v[1] + (b[i][1] - v[1]) * p]);
+
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  const seg = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+  const easeOutCubic = p => 1 - Math.pow(1 - p, 3);
+  const easeInOutCubic = p => (p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+  const easeInOutQuad = p => (p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+
+  function mark(host) {
+    host.innerHTML =
+      '<svg class="logo-svg" viewBox="0 0 16 10" aria-hidden="true">' +
+      '<polygon class="g" fill="#cdcece"/>' +
+      `<polygon class="rb" fill="${ACCENT}" stroke="${ACCENT}" stroke-width=".05"/>` +
+      `<polygon class="rs" fill="${ACCENT}" stroke="${ACCENT}" stroke-width=".05"/></svg>`;
+    return { g: host.querySelector('.g'), rb: host.querySelector('.rb'), rs: host.querySelector('.rs') };
+  }
+
+  function draw(m, gray, grayOp, rot, barOp, q) {
+    m.g.setAttribute('points', poly(gray));
+    m.g.setAttribute('transform', 'rotate(' + rot.toFixed(3) + ' 5 0)');
+    m.g.style.opacity = grayOp.toFixed(3);
+    m.rb.setAttribute('points', poly(BAR));
+    m.rb.style.opacity = barOp.toFixed(3);
+    m.rs.setAttribute('points', poly(leg(q)));
+    m.rs.style.opacity = seg(q, 0, .15).toFixed(3);
+  }
+
+  /* ============================================================
+     Elements
+  ============================================================ */
+  const $ = id => document.getElementById(id);
+  const player = $('player'), screen = $('screen'), beam = $('beam'), wordmark = $('wordmark');
+  const bar = $('bar'), barFill = $('barFill'), barKnob = $('barKnob'), cur = $('cur'), dur = $('dur');
+  const bigPlay = $('bigPlay'), playBtn = $('playBtn'), replayBtn = $('replayBtn'), muteBtn = $('muteBtn'), fsBtn = $('fsBtn');
+
+  const M = mark($('logoWrap'));
+  draw(mark($('posterMark')), GRAY.arrow, 1, 0, 1, 1);
+
+  wordmark.innerHTML = [...'TWIST'].map(c => `<span class="ch"><span>${c}</span></span>`).join('');
+  const letters = [...wordmark.querySelectorAll('.ch > span')];
+
+  const ICON = {
+    play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>',
+    replay: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/></svg>',
+    volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    muted: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>',
+    fs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>'
+  };
+
+  /* ============================================================
+     Timeline
+       0.15 – 0.65  a thin gray line draws out
+       0.65 – 1.20  the line opens into the arrow (still tilted)
+       1.20 – 1.85  the arrow rotates upright; its old leg stays behind as a red line
+       1.75 – 2.45  the red line opens: its leg swings down into the second arrow
+       2.35 – 3.35  light sweeps across the finished mark
+       2.55 – 3.60  T W I S T rise out of a mask, tracking tightens
+       3.60 – 4.80  hold
+  ============================================================ */
+  function render(t) {
+    t = clamp(t, 0, TOTAL);
+    const W = screen.clientWidth || 1000;
+
+    const gp = t < .65
+      ? mix(GRAY.dot, GRAY.line, easeOutCubic(seg(t, .15, .65)))
+      : mix(GRAY.line, GRAY.arrow, easeInOutCubic(seg(t, .65, 1.2)));
+    const rot = -BETA * (1 - easeInOutCubic(seg(t, 1.2, 1.85)));
+    const q = easeInOutCubic(seg(t, 1.75, 2.45));
+    draw(M, gp, seg(t, .1, .24), rot, seg(t, 1.24, 1.34), q);
+
+    const bp = easeInOutQuad(seg(t, 2.35, 3.35));
+    beam.style.transform = `translateX(${(-.18 * W + bp * 1.18 * W).toFixed(1)}px)`;
+    beam.style.opacity = (Math.sin(Math.PI * bp) * .6).toFixed(3);
+
+    letters.forEach((el, i) => {
+      const e = easeOutCubic(seg(t, 2.55 + i * .09, 3.15 + i * .09));
+      el.style.transform = `translateY(${((1 - e) * 110).toFixed(1)}%)`;
+    });
+    const ls = .42 + .45 * (1 - easeOutCubic(seg(t, 2.55, 3.8)));
+    wordmark.style.letterSpacing = ls.toFixed(3) + 'em';
+    wordmark.style.marginRight = (-ls).toFixed(3) + 'em';
+  }
+
+  function layout() {
+    const size = Math.max(14, (screen.clientWidth || 1000) * .055).toFixed(2) + 'px';
+    wordmark.style.fontSize = size;
+    $('posterWord').style.fontSize = size;
+  }
+
+  /* ============================================================
+     Sound — all synthesised, built to feel acoustic:
+     felt-mallet timpani, plucked strings, a bowed-string swell
+     and a damped hall for the room. No files, no noise sweeps.
+  ============================================================ */
+  const audio = (() => {
+    let ctx = null, out = null, ir = null, noise = null, wave = null;
+    let bus = null, wetG = null, conv = null, muted = false;
+    const live = [];
+    const track = n => { live.push(n); return n; };
+    const send = g => g.connect(bus);
+
+    function ensure() {
+      if (ctx) return ctx;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+      const sr = ctx.sampleRate;
+
+      out = ctx.createGain(); out.gain.value = muted ? 0 : .9;
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -16; comp.knee.value = 30; comp.ratio.value = 3; comp.attack.value = .01; comp.release.value = .4;
+      out.connect(comp); comp.connect(ctx.destination);
+
+      /* hall: noise that fades and darkens as it rings */
+      const len = Math.floor(sr * 3.2);
+      ir = ctx.createBuffer(2, len, sr);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = ir.getChannelData(ch);
+        let lp = 0;
+        for (let i = 0; i < len; i++) {
+          const x = i / len, a = .55 * Math.pow(1 - x, 1.6) + .03;
+          lp += ((Math.random() * 2 - 1) - lp) * a;
+          d[i] = lp * Math.pow(1 - x, 2.2) * (i < sr * .012 ? i / (sr * .012) : 1);
+        }
+      }
+
+      /* bowed-string timbre: soft harmonic roll-off, no buzzy saw edge */
+      const N = 14, re = new Float32Array(N), im = new Float32Array(N);
+      for (let n = 1; n < N; n++) im[n] = 1 / Math.pow(n, 1.35);
+      wave = ctx.createPeriodicWave(re, im);
+
+      noise = ctx.createBuffer(1, sr, sr);
+      const nd = noise.getChannelData(0);
+      for (let i = 0; i < sr; i++) nd[i] = Math.random() * 2 - 1;
+      return ctx;
+    }
+
+    /* felt-mallet timpani: a few head modes, each with its own decay, a small pitch drop on impact */
+    function drum(c, at, f, dur, vol) {
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; lp.connect(bus);
+      [[1, 1, 1], [1.5, .5, .6], [2, .36, .42], [2.5, .2, .3], [3, .1, .2]].forEach(([r, a, k]) => {
+        const o = c.createOscillator(); o.type = 'sine';
+        o.frequency.setValueAtTime(f * r * 1.12, at);
+        o.frequency.exponentialRampToValueAtTime(f * r, at + .08);
+        const g = c.createGain();
+        g.gain.setValueAtTime(.0001, at);
+        g.gain.exponentialRampToValueAtTime(vol * a, at + .005);
+        g.gain.exponentialRampToValueAtTime(.0001, at + dur * k);
+        o.connect(g); g.connect(lp);
+        track(o); o.start(at); o.stop(at + dur * k + .05);
+      });
+      const s = c.createBufferSource(); s.buffer = noise;
+      const nl = c.createBiquadFilter(); nl.type = 'lowpass'; nl.frequency.value = 650;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(vol * .5, at); ng.gain.exponentialRampToValueAtTime(.0001, at + .05);
+      s.connect(nl); nl.connect(ng); send(ng);
+      track(s); s.start(at); s.stop(at + .08);
+    }
+
+    /* plucked string (Karplus–Strong, with the pick softened) */
+    function pluck(c, at, f, dur, vol) {
+      const sr = c.sampleRate, n = Math.floor(sr * dur), P = Math.max(2, Math.round(sr / f));
+      const buf = c.createBuffer(1, n, sr), d = buf.getChannelData(0), ring = new Float32Array(P);
+      let p = 0;
+      for (let i = 0; i < P; i++) { p += ((Math.random() * 2 - 1) - p) * .4; ring[i] = p; }
+      for (let i = 0, k = 0; i < n; i++, k = (k + 1) % P) {
+        d[i] = ring[k] * 2.2;
+        ring[k] = (ring[k] + ring[(k + 1) % P]) * .4985;
+      }
+      const s = c.createBufferSource(); s.buffer = buf;
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200;
+      const g = c.createGain();
+      g.gain.setValueAtTime(vol, at); g.gain.linearRampToValueAtTime(0, at + dur);
+      s.connect(lp); lp.connect(g); send(g);
+      track(s); s.start(at);
+    }
+
+    /* bowed strings: two players per note, slow bow, late vibrato, a little drift */
+    function strings(c, at, notes, att, hold, rel, vol) {
+      const end = at + att + hold + rel;
+      notes.forEach(([f, lv]) => {
+        [-1, 1].forEach(side => {
+          const o = c.createOscillator(); o.setPeriodicWave(wave);
+          o.frequency.value = f * Math.pow(2, (side * (3 + Math.random() * 3)) / 1200);
+          const lfo = c.createOscillator(); lfo.frequency.value = 4.8 + Math.random() * .8;
+          const lg = c.createGain();
+          lg.gain.setValueAtTime(0, at); lg.gain.linearRampToValueAtTime(f * .003, at + att + .3);
+          lfo.connect(lg); lg.connect(o.frequency);
+          const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = .5;
+          lp.frequency.setValueAtTime(500, at);
+          lp.frequency.exponentialRampToValueAtTime(2600, at + att);
+          lp.frequency.exponentialRampToValueAtTime(900, end);
+          const g = c.createGain();
+          g.gain.setValueAtTime(.0001, at);
+          g.gain.exponentialRampToValueAtTime(vol * lv, at + att);
+          g.gain.setValueAtTime(vol * lv, at + att + hold);
+          g.gain.exponentialRampToValueAtTime(.0001, end);
+          o.connect(lp); lp.connect(g);
+          if (c.createStereoPanner) { const pn = c.createStereoPanner(); pn.pan.value = side * .3; g.connect(pn); send(pn); }
+          else send(g);
+          track(o); track(lfo);
+          o.start(at); lfo.start(at); o.stop(end + .1); lfo.stop(end + .1);
+        });
+      });
+    }
+
+    /* ---- score: D major, a swell that leans into "ta … dum" ---- */
+    const SCORE = [
+      { t: .15, run: (c, at) => {                                   // the line draws
+          pluck(c, at, 220, 1.8, .12);
+          strings(c, at, [[73.42, 1], [110, .8], [146.83, .6]], 2.3, 0, 1.2, .018);
+        } },
+      { t: .65, run: (c, at) => pluck(c, at, 293.66, 1.5, .09) },   // it opens
+      { t: 1.2, run: (c, at) => pluck(c, at, 369.99, 1.5, .08) },   // the arrow turns
+      { t: 1.85, run: (c, at) => drum(c, at, 110, .7, .32) },       // "ta"
+      { t: 2.45, run: (c, at) => {                                  // "dum"
+          drum(c, at, 73.42, 2.8, .6);
+          strings(c, at, [[73.42, 1], [110, .85], [146.83, .8], [185, .45], [220, .6], [293.66, .45]], .22, .5, 2.4, .03);
+        } },
+      { t: 2.65, run: (c, at) => pluck(c, at, 587.33, 1.9, .07) }   // light on top as the letters rise
+    ];
+
+    function start(from) {
+      const c = ensure();
+      if (!c) return;
+      if (c.state === 'suspended') c.resume();
+      stop();
+      bus = c.createGain();
+      wetG = c.createGain(); wetG.gain.value = .36;
+      conv = c.createConvolver(); conv.buffer = ir;
+      bus.connect(out); bus.connect(wetG); wetG.connect(conv); conv.connect(out);
+      const t0 = c.currentTime + .06;
+      SCORE.forEach(ev => { if (ev.t - from >= 0) ev.run(c, t0 + (ev.t - from)); });
+    }
+
+    /* fade out instead of cutting, then clean up */
+    function stop() {
+      if (!bus) return;
+      const b = bus, w = wetG, cv = conv, nodes = live.slice();
+      b.gain.cancelScheduledValues(ctx.currentTime);
+      b.gain.setTargetAtTime(0, ctx.currentTime, .012);
+      setTimeout(() => {
+        nodes.forEach(n => { try { n.stop(); } catch (e) { /* already ended */ } });
+        try { b.disconnect(); w.disconnect(); cv.disconnect(); } catch (e) { /* ignore */ }
+      }, 150);
+      live.length = 0;
+      bus = null;
+    }
+
+    function toggle() { muted = !muted; if (out) out.gain.value = muted ? 0 : .9; return muted; }
+    return { start, stop, toggle, isMuted: () => muted };
+  })();
+
+  /* ============================================================
+     Player
+  ============================================================ */
+  let playing = false, started = false, ended = false, time = 0, last = 0, raf = 0, timer = 0;
+
+  const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+  function updateChrome() {
+    const p = (time / TOTAL) * 100;
+    barFill.style.width = p.toFixed(2) + '%';
+    barKnob.style.left = p.toFixed(2) + '%';
+    cur.textContent = fmt(time);
+    bar.setAttribute('aria-valuenow', Math.round(p));
+  }
+
+  function syncIcons() {
+    playBtn.innerHTML = playing ? ICON.pause : ICON.play;
+    const mode = ended ? 'replay' : 'play';
+    bigPlay.innerHTML = ICON[mode];
+    bigPlay.dataset.icon = mode;
+    bigPlay.setAttribute('aria-label', mode === 'replay' ? 'Replay intro' : 'Play intro');
+    replayBtn.innerHTML = ICON.replay;
+    muteBtn.innerHTML = audio.isMuted() ? ICON.muted : ICON.volume;
+    fsBtn.innerHTML = ICON.fs;
+  }
+
+  function loop(ts) {
+    if (!playing) return;
+    time += Math.min(.05, (ts - last) / 1000);
+    last = ts;
+    if (time >= TOTAL) { time = TOTAL; render(time); updateChrome(); halt(true); return; }
+    render(time);
+    updateChrome();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function hideChromeSoon(ms) {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (playing) screen.classList.remove('showui'); }, ms);
+  }
+
+  function play() {
+    if (!started) { started = true; screen.classList.remove('poster-on'); }
+    if (time >= TOTAL - .001) time = 0;
+    ended = false;
+    render(time);
+    playing = true;
+    screen.classList.add('playing');
+    screen.classList.remove('showui');
+    hideChromeSoon(1100);
+    syncIcons();
+    audio.start(time);
+    last = performance.now();
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(loop);
+  }
+
+  function halt(done) {
+    playing = false;
+    ended = !!done;
+    cancelAnimationFrame(raf);
+    clearTimeout(timer);
+    screen.classList.remove('playing');
+    screen.classList.add('showui');
+    audio.stop();
+    syncIcons();
+  }
+
+  const pause = () => halt(false);
+  const togglePlay = () => (playing ? pause() : play());
+
+  function seek(sec) {
+    time = clamp(sec, 0, TOTAL);
+    if (ended && time < TOTAL - .001) ended = false;
+    render(time);
+    updateChrome();
+    if (playing) { audio.stop(); audio.start(time); last = performance.now(); }
+    syncIcons();
+  }
+
+  /* controls */
+  bigPlay.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
+  playBtn.addEventListener('click', togglePlay);
+  replayBtn.addEventListener('click', () => { seek(0); play(); });
+  muteBtn.addEventListener('click', () => { audio.toggle(); syncIcons(); });
+  fsBtn.addEventListener('click', toggleFullscreen);
+
+  screen.addEventListener('click', e => { if (!e.target.closest('button, .chrome')) togglePlay(); });
+  screen.addEventListener('pointermove', () => { screen.classList.add('showui'); if (playing) hideChromeSoon(2400); });
+  screen.addEventListener('pointerleave', () => { if (playing) { clearTimeout(timer); screen.classList.remove('showui'); } });
+
+  /* scrubbing */
+  let scrubbing = false;
+  const seekFrom = e => { const r = bar.getBoundingClientRect(); seek(((e.clientX - r.left) / r.width) * TOTAL); };
+  bar.addEventListener('pointerdown', e => { scrubbing = true; bar.setPointerCapture(e.pointerId); seekFrom(e); });
+  bar.addEventListener('pointermove', e => { if (scrubbing) seekFrom(e); });
+  bar.addEventListener('pointerup', e => {
+    scrubbing = false;
+    try { bar.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+
+  /* fullscreen */
+  function toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (player.requestFullscreen) player.requestFullscreen();
+  }
+  document.addEventListener('fullscreenchange', () => {
+    player.classList.toggle('fs', document.fullscreenElement === player);
+    requestAnimationFrame(() => { layout(); render(time); });
+  });
+
+  /* keyboard */
+  window.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input, textarea')) return;
+    if (e.code === 'Space' || e.key === 'k') {
+      e.preventDefault();
+      togglePlay();
+      screen.classList.add('showui');
+      if (playing) hideChromeSoon(2400);
+    } else if (e.key === 'ArrowLeft') seek(time - .5);
+    else if (e.key === 'ArrowRight') seek(time + .5);
+    else if (e.key === 'm') { audio.toggle(); syncIcons(); }
+    else if (e.key === 'f') toggleFullscreen();
+  });
+
+  window.addEventListener('resize', () => { layout(); render(time); });
+
+  /* go */
+  dur.textContent = fmt(TOTAL);
+  layout();
+  render(0);
+  updateChrome();
+  syncIcons();
+})();
+</script>
+</body>
+</html>

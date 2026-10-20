@@ -1,0 +1,26 @@
+diff --git a/dev/chunks/vidstack-CWZPUheZ.js b/dev/chunks/vidstack-CWZPUheZ.js
+index b37f3ce32597ea168c050b8299da2f50fa685fef..0ec26ea1ab3c5979ae410bdffad9080465ac596d 100644
+--- a/dev/chunks/vidstack-CWZPUheZ.js
++++ b/dev/chunks/vidstack-CWZPUheZ.js
+@@ -838,7 +838,7 @@ var Instance = class {
+ 		let stateFactory = Component.state, props = Component.props;
+ 		if (stateFactory) {
+ 			this.$state = stateFactory.create();
+-			this.state = new Proxy(this.$state, { get: (_, prop) => this.$state[prop]() });
++			this.state = new Proxy(this.$state, { get: (_, prop) => prop in this.$state ? this.$state[prop]() : void 0 });
+ 			provideContext(stateFactory, this.$state);
+ 		}
+ 		if (props) {
+diff --git a/prod/chunks/vidstack-B9fTkxQO.js b/prod/chunks/vidstack-B9fTkxQO.js
+index a3b21b769787f070f8cfbe901594911435721692..0738aff87f28660b532c16f4119356b599ccd2d2 100644
+--- a/prod/chunks/vidstack-B9fTkxQO.js
++++ b/prod/chunks/vidstack-B9fTkxQO.js
+@@ -834,7 +834,7 @@ var Instance = class {
+ 		let stateFactory = Component.state, props = Component.props;
+ 		if (stateFactory) {
+ 			this.$state = stateFactory.create();
+-			this.state = new Proxy(this.$state, { get: (_, prop) => this.$state[prop]() });
++			this.state = new Proxy(this.$state, { get: (_, prop) => prop in this.$state ? this.$state[prop]() : void 0 });
+ 			provideContext(stateFactory, this.$state);
+ 		}
+ 		if (props) {

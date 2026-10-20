@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "next/link": ["./src/next/link.tsx"],
+      "next/dynamic": ["./src/next/dynamic.tsx"],
+      "next/navigation": ["./src/next/navigation.ts"]
+    },
+    "types": ["vite/client", "react", "react-dom"]
+  },
+  "include": ["src"]
+}

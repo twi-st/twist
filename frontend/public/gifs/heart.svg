@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .beat { transform-origin: 60px 58px; animation: beat 1s ease-in-out infinite; }
+    .beat.small { transform-origin: 94px 26px; animation-delay: .18s; }
+    @keyframes beat {
+      0%, 100% { transform: scale(1); }
+      30% { transform: scale(1.16); }
+      55% { transform: scale(.95); }
+      75% { transform: scale(1.06); }
+    }
+  </style>
+  <path class="beat" d="M60 104 C 20 77 10 53 25 38 C 37 27 54 32 60 45 C 66 32 83 27 95 38 C 110 53 100 77 60 104 Z" fill="#e2554f" />
+  <path class="beat small" d="M94 30 C 88 26 86 21 89 18 C 91 16 94 17 95 19.5 C 96 17 99 16 101 18 C 104 21 102 26 94 30 Z" fill="#f472b6" />
+</svg>

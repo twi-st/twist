@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .spin { transform-origin: 60px 60px; animation: spin 4s linear infinite; }
+    .tw { transform-box: fill-box; transform-origin: center; animation: twinkle 1.6s ease-in-out infinite; }
+    .t2 { animation-delay: .45s; }
+    .t3 { animation-delay: .9s; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes twinkle { 0%, 100% { opacity: .3; transform: scale(.55); } 50% { opacity: 1; transform: scale(1); } }
+  </style>
+  <g class="spin">
+    <path class="tw" d="M60 16 L68 52 L104 60 L68 68 L60 104 L52 68 L16 60 L52 52 Z" fill="#fbbf24" />
+    <path class="tw t2" d="M94 20 L97 29 L106 32 L97 35 L94 44 L91 35 L82 32 L91 29 Z" fill="#60a5fa" />
+    <path class="tw t3" d="M24 74 L27 83 L36 86 L27 89 L24 98 L21 89 L12 86 L21 83 Z" fill="#f472b6" />
+  </g>
+</svg>

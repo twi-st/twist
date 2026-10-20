@@ -1,0 +1,44 @@
+# Build output and local caches
+bin/
+build/bin/
+build/linux/appimage/build
+build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+*.exe
+*.syso
+*.dll
+*.pdb
+
+# Frontend build output and generated bindings
+frontend/dist/
+frontend/bindings/
+node_modules/
+frontend/node_modules/
+
+# Task runner cache
+.task/
+
+# Wrangler / Cloudflare credentials (never commit account metadata)
+**/.wrangler/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej

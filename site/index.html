@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Twist — a desktop app for watching anime</title>
+    <meta
+      name="description"
+      content="Twist is a desktop app for watching anime. Ad-free, no accounts required to watch, and your library stays on your machine."
+    />
+    <meta name="theme-color" content="#161719" />
+    <link rel="icon" href="favicon.ico" />
+
+    <!-- Social preview -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Twist — a desktop app for watching anime" />
+    <meta
+      property="og:description"
+      content="Ad-free playback, multiple sources, offline downloads, and a library that stays on your machine."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <a class="brand" href="#top" aria-label="Twist home">
+        <svg viewBox="0 0 16 10" aria-hidden="true">
+          <polygon points="0,10 5,0 10,10 9,10 5,2 1,10" fill="#cdcece" />
+          <polygon points="11,10 6,0 16,0 15.5,1 7.5,1 11.5,9" fill="#d4433c" />
+        </svg>
+        <span>TWIST</span>
+      </a>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="#disclaimers">Disclaimers</a>
+        <a class="button small" id="download-top" href="https://github.com/twistied/twist/releases/latest">Download</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Desktop app · Windows · macOS · Linux</p>
+          <h1>Watch anime<br /><span class="accent">without the noise.</span></h1>
+          <p class="lede">
+            Twist is a desktop player for anime. No ads, no accounts needed to
+            watch, and your history and library stay on your own machine.
+          </p>
+          <div class="actions">
+            <a class="button" id="download" href="https://github.com/twistied/twist/releases/latest">
+              Download latest release
+            </a>
+            <a class="button ghost" href="https://github.com/twistied/twist">View source</a>
+          </div>
+          <p class="fineprint">Free and open source · MIT licensed</p>
+        </div>
+
+        <!-- Real screenshots, captured from the running app. -->
+        <figure class="shot">
+          <img
+            src="img/watch.webp"
+            width="1440"
+            height="900"
+            alt="Twist playing an episode: the built-in player with the timeline, subtitles and controls"
+            fetchpriority="high"
+          />
+          <figcaption>Built-in player, with the source, quality and subtitle controls</figcaption>
+        </figure>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="features">
+        <h2>What it gives you</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>A player that behaves like one</h3>
+            <p>
+              Quality selection, subtitles you can restyle, skip intro and outro,
+              auto-next and keyboard shortcuts. Fullscreen survives switching
+              episodes.
+            </p>
+          </article>
+          <article class="card">
+            <h3>More than one source</h3>
+            <p>
+              Several mirrors, tried automatically. If one is down or slow, Twist
+              moves on instead of leaving you on a spinner.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Subtitles, your way</h3>
+            <p>
+              The stream's own subtitles come first, and extra languages can be
+              pulled from OpenSubtitles inside the player.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Watch offline</h3>
+            <p>
+              Download episodes at the quality you want, pause and resume, then
+              play them back with no connection at all.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Torrent streaming, if you want it</h3>
+            <p>
+              An optional mode streams episodes straight from torrents and treats
+              them like a normal episode — seekable, with a real duration. Off by
+              default.
+            </p>
+          </article>
+          <article class="card">
+            <h3>It remembers where you were</h3>
+            <p>
+              Continue watching, a library for later, and per-episode history you
+              can prune one episode at a time.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Gallery: real captures of the app's own screens. -->
+      <section id="screens" class="screens">
+        <h2>Inside the app</h2>
+        <p class="section-lede">
+          Screenshots taken from Twist itself — the same build you download.
+        </p>
+        <div class="gallery">
+          <figure class="tile wide">
+            <img src="img/home.webp" width="1440" height="900" loading="lazy"
+              alt="The Twist home page: search, filters and a grid of anime covers" />
+            <figcaption>Browse and search, with filters in the title bar</figcaption>
+          </figure>
+          <figure class="tile wide">
+            <img src="img/info.webp" width="1440" height="900" loading="lazy"
+              alt="A title page showing cover art, synopsis, episode list and streaming links" />
+            <figcaption>Title pages: synopsis, episodes, and where it streams</figcaption>
+          </figure>
+          <figure class="tile">
+            <img src="img/library.webp" width="1440" height="900" loading="lazy"
+              alt="The library page with saved anime covers and continue-watching links" />
+            <figcaption>Your library, saved for later</figcaption>
+          </figure>
+          <figure class="tile">
+            <img src="img/player-menu.webp" width="1440" height="900" loading="lazy"
+              alt="The player settings menu open over a paused episode, showing quality, speed and subtitle tabs" />
+            <figcaption>Quality, speed and subtitles, in the player</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- Install -->
+      <section id="install" class="install">
+        <h2>Install</h2>
+        <p class="section-lede">
+          Download the build for your platform from the latest release. Builds are
+          unsigned, so your OS may ask you to confirm the first launch.
+        </p>
+        <div class="platforms">
+          <a class="platform" href="https://github.com/twistied/twist/releases/latest">
+            <span class="platform-name">Windows</span>
+            <span class="platform-note">10 and 11 · installer or portable</span>
+          </a>
+          <a class="platform" href="https://github.com/twistied/twist/releases/latest">
+            <span class="platform-name">macOS</span>
+            <span class="platform-note">12+ · Apple Silicon or Intel · .dmg</span>
+          </a>
+          <a class="platform" href="https://github.com/twistied/twist/releases/latest">
+            <span class="platform-name">Linux</span>
+            <span class="platform-note">AppImage · .deb · .rpm</span>
+          </a>
+        </div>
+        <p class="fineprint">
+          Torrent streaming needs ffmpeg. Twist can download it for you, or point
+          it at an install you already have.
+        </p>
+      </section>
+
+      <!-- Disclaimers -->
+      <section id="disclaimers" class="disclaimers">
+        <h2>Please read</h2>
+        <div class="notes">
+          <div class="note">
+            <h3>Twist is a player, not a source</h3>
+            <p>
+              It ships with no content, no catalogue and no credentials. It does
+              not host, index or distribute anything — it resolves streams from
+              third-party providers the same way a browser does.
+            </p>
+          </div>
+          <div class="note">
+            <h3>What you watch is on you</h3>
+            <p>
+              Comply with the laws where you live and with the terms of any
+              service you use. The authors do not endorse copyright infringement.
+            </p>
+          </div>
+          <div class="note">
+            <h3>No warranty</h3>
+            <p>
+              Third-party services are not affiliated with this project and can
+              change or disappear at any time. Nothing here is guaranteed to work.
+            </p>
+          </div>
+          <div class="note">
+            <h3>Torrents expose your IP</h3>
+            <p>
+              When torrent streaming is enabled, your IP address is visible to
+              other peers in the swarm. That is how BitTorrent works. Only use it
+              where you are allowed to.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="foot-inner">
+        <span class="brand small-brand">
+          <svg viewBox="0 0 16 10" aria-hidden="true">
+            <polygon points="0,10 5,0 10,10 9,10 5,2 1,10" fill="#cdcece" />
+            <polygon points="11,10 6,0 16,0 15.5,1 7.5,1 11.5,9" fill="#d4433c" />
+          </svg>
+          <span>TWIST</span>
+        </span>
+        <span class="foot-links">
+          <a href="https://github.com/twistied/twist">GitHub</a>
+          <a href="https://github.com/twistied/twist/releases">Releases</a>
+          <a href="https://github.com/twistied/twist/issues">Issues</a>
+          <a href="https://github.com/twistied/twist/blob/main/LICENSE">MIT License</a>
+        </span>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

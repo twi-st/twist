@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" class="h-full antialiased" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ad-free anime streaming and discussion" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>Twist</title>
+    <script>
+      try {
+        var raw = localStorage.getItem('twist:settings');
+        var saved = raw ? JSON.parse(raw) : null;
+        var root = document.documentElement;
+        if (saved && saved.theme) root.dataset.theme = saved.theme;
+        if (saved && typeof saved.accent === 'string' && /^#[0-9a-f]{6}$/i.test(saved.accent)) {
+          root.style.setProperty('--color-twist-red', saved.accent);
+          root.style.setProperty('--accent', saved.accent);
+        }
+      } catch (error) {
+        /* defaults */
+      }
+    </script>
+  </head>
+  <body class="min-h-full flex flex-col">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

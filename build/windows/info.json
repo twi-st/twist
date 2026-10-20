@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "0.1.0"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "0.1.0",
+			"CompanyName": "Twist",
+			"FileDescription": "Ad-free anime streaming and discussion",
+			"LegalCopyright": "(c) 2026, Twist",
+			"ProductName": "Twist",
+			"Comments": "Twist desktop"
+		}
+	}
+}

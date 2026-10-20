@@ -1,0 +1,760 @@
+/*
+ * Vidstack skin for Twist.
+ *
+ * The stock `default-theme.css` is not imported, so every control is styled
+ * from scratch here to match the flat, red-accented look of the original site.
+ * Class names mirror the structure produced by the components in
+ * `app/components/VideoPlayer.tsx`.
+ */
+
+.player {
+  --vds-clr-accent: var(--accent, #d4433c);
+  --vds-clr-white: #cdcece;
+  --vds-clr-dim: #8e8f91;
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+  font-family: var(--font-body);
+}
+
+.player video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Spinner shown while the source is buffering. */
+.player .vds-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+
+/* Only visible while the player reports it is actually buffering. */
+.player media-player[data-buffering] .vds-spinner {
+  opacity: 1;
+}
+
+.player .vds-spinner circle {
+  fill: none;
+  stroke: var(--vds-clr-accent);
+  stroke-width: 2;
+}
+
+.player .vds-spinner [data-fill] {
+  stroke: #cdcece;
+  stroke-linecap: round;
+}
+
+/* Controls sit flush against the bottom edge, as in the reference screenshots. */
+.player .vds-controls {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent);
+  opacity: 0;
+  transition: opacity 0.35s ease-in-out;
+}
+
+.player[data-hovered] .vds-controls,
+.player[data-focus-within] .vds-controls,
+.player[data-controls-visible] .vds-controls {
+  opacity: 1;
+}
+
+/*
+ * Fullscreen: the bar follows the pointer. While it is awake the cursor shows;
+ * once it sleeps (3s idle) the cursor goes with it, like a native player.
+ */
+.player:fullscreen[data-idle],
+.player :-webkit-full-screen[data-idle],
+.player :fullscreen[data-idle],
+.player[data-fullscreen][data-idle] {
+  cursor: none;
+}
+
+/*
+ * Controls never take keyboard focus. Vidstack renders its buttons focusable,
+ * so pressing Space after clicking fullscreen used to re-activate that button
+ * instead of playing/pausing.
+ */
+.player [data-no-focus] button,
+.player [data-no-focus] input,
+.player [data-no-focus] [role='button'],
+.player .vds-controls button,
+.player .vds-controls input {
+  outline: none;
+}
+
+.player [data-no-focus] button:focus,
+.player [data-no-focus] button:focus-visible,
+.player [data-no-focus] input:focus,
+.player [data-no-focus] input:focus-visible {
+  box-shadow: none;
+}
+
+.player .vds-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.player .vds-group[data-grow] {
+  flex: 1;
+  min-width: 0;
+}
+
+.player button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--vds-clr-white);
+  cursor: pointer;
+  transition: color 0.2s ease-in-out, background 0.2s ease-in-out;
+}
+
+.player button:hover {
+  color: var(--vds-clr-accent);
+}
+
+.player button:focus-visible {
+  outline: 1px solid var(--vds-clr-accent);
+  outline-offset: 1px;
+}
+
+.player .vds-button svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  display: block;
+}
+
+.player .vds-time {
+  color: var(--vds-clr-white);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Seek slider: thin red fill over a dark track. */
+/* Wrapper that holds the time slider and the skip-range markers over it. */
+.player .vds-slider-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.player .vds-slider-wrap .vds-time-slider {
+  width: 100%;
+}
+
+.player .vds-time-slider {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.player .vds-track {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.player .vds-track-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--slider-fill, 0%);
+  background: var(--vds-clr-accent);
+}
+
+.player .vds-track-progress {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--slider-progress, 0%);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.player .vds-thumb {
+  position: absolute;
+  top: 50%;
+  translate: -50% -50%;
+  left: var(--slider-fill, 0%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--vds-clr-accent);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.player[data-hovered] .vds-thumb,
+.player .vds-time-slider[data-dragging] .vds-thumb {
+  opacity: 1;
+}
+
+/* Volume slider mirrors the time slider styling. */
+.player .vds-volume-slider {
+  position: relative;
+  width: 64px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.player .vds-volume-slider .vds-thumb {
+  opacity: 1;
+}
+
+.player .vds-preview {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  translate: -50% -6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--vds-clr-white);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.player .vds-time-slider[data-pointing] .vds-preview,
+.player .vds-time-slider[data-dragging] .vds-preview {
+  opacity: 1;
+}
+
+/* Captions sit centred near the bottom, clear of the control bar. */
+/*
+ * The provider box is the positioning context; the video is pinned to it and
+ * `object-fit: contain` centres the picture. Absolute positioning avoids the
+ * percentage-against-content sizing that left the video short in fullscreen.
+ */
+.player .vds-provider {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.player .vds-provider video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  display: block;
+}
+
+/*
+ * Fullscreen: whichever element actually goes fullscreen (our wrapper or
+ * <media-player>), it fills the screen, and everything from it down to the
+ * <video> gets a definite height so `object-fit: contain` can centre the
+ * picture instead of leaving it pinned at the top.
+ */
+.player:fullscreen,
+.player:-webkit-full-screen,
+.player :fullscreen,
+.player :-webkit-full-screen,
+.player media-player[data-fullscreen] {
+  width: 100vw !important;
+  height: 100vh !important;
+  aspect-ratio: auto !important;
+  background: #000 !important;
+}
+
+.player:fullscreen media-player,
+.player :-webkit-full-screen media-player,
+.player :fullscreen media-player,
+.player :-webkit-full-screen media-player,
+.player media-player[data-fullscreen] {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.player:fullscreen .vds-provider,
+.player :-webkit-full-screen .vds-provider,
+.player :fullscreen .vds-provider,
+.player :-webkit-full-screen .vds-provider,
+.player media-player[data-fullscreen] .vds-provider {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.player:fullscreen video,
+.player :-webkit-full-screen video,
+.player :fullscreen video,
+.player :-webkit-full-screen video,
+.player media-player[data-fullscreen] video {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
+/*
+ * Subtitles sit over the video, near the bottom. Vidstack renders cues as
+ * `<div data-part="cue">` inside <media-captions> â€” white, bold, outlined in
+ * black, and they grow with the screen instead of shrinking in fullscreen.
+ */
+/*
+ * Subtitles. The live DOM (checked in a real browser) is:
+ *   div.vds-captions > div[data-part='cue-display'] > div[data-part='cue'] > <i>
+ * There is no <media-captions> element â€” Vidstack renders plain divs â€” so the
+ * rules target the parts directly (plus ::cue for the native renderer).
+ */
+/*
+ * Subtitles. The live DOM (checked in a real browser) is:
+ *   div.vds-captions > div[data-part='cue-display'] > div[data-part='cue'] > <i>
+ * There is no <media-captions> element — Vidstack renders plain divs — so the
+ * rules target the parts directly (plus ::cue for the native renderer).
+ *
+ * Appearance comes from the settings store as CSS variables on `.player`
+ * (--cue-scale, --cue-color, --cue-bg, --cue-bg-opacity, --cue-opacity,
+ * --cue-stroke, --cue-stroke-size, --cue-shadow), YouTube-style.
+ */
+.player video::cue {
+  color: var(--cue-color, #fff);
+  font-family: var(--font-body), Lato, sans-serif;
+  font-weight: 700;
+  background: transparent;
+  line-height: 1.3;
+  text-shadow:
+    -1px -1px 0 var(--cue-stroke, #000),
+    1px -1px 0 var(--cue-stroke, #000),
+    -1px 1px 0 var(--cue-stroke, #000),
+    1px 1px 0 var(--cue-stroke, #000);
+}
+
+.player[data-subtitles='small'] video::cue {
+  font-size: 0.9em;
+}
+
+.player[data-subtitles='large'] video::cue {
+  font-size: 1.18em;
+}
+
+/*
+ * The captions container sits over the video, near the bottom, and is clamped
+ * to the player box so long lines wrap instead of spilling past the frame.
+ * Its display is left alone: Vidstack hides it (last cue included) when
+ * captions are off.
+ */
+.player .vds-captions {
+  position: absolute !important;
+  inset: auto 0 8% !important;
+  max-height: 45% !important;
+  overflow: hidden !important;
+  padding: 0 6% !important;
+  text-align: center !important;
+  pointer-events: none !important;
+  z-index: 3;
+  contain: layout paint;
+}
+
+.player [data-part='cue-display'] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 2px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  text-align: center !important;
+}
+
+.player [data-part='cue'],
+.player [data-part='cue'] * {
+  color: var(--cue-color, #fff) !important;
+  font-family: var(--font-body), Lato, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: calc(0.95rem * var(--cue-scale, 1)) !important;
+  line-height: 1.35 !important;
+  opacity: var(--cue-opacity, 1) !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background: rgba(var(--cue-bg-rgb, 0, 0, 0), var(--cue-bg-opacity, 0)) !important;
+  padding: 0 0.25em !important;
+  border-radius: 2px;
+  text-shadow:
+    -1px -1px 0 var(--cue-stroke, #000),
+    1px -1px 0 var(--cue-stroke, #000),
+    -1px 1px 0 var(--cue-stroke, #000),
+    1px 1px 0 var(--cue-stroke, #000),
+    0 2px 6px rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Stroke size / shadow toggles (0 disables each effect). */
+.player[data-cue-stroke='0'] [data-part='cue'],
+.player[data-cue-stroke='0'] [data-part='cue'] * {
+  text-shadow: none !important;
+}
+
+.player[data-cue-shadow='false'] [data-part='cue'],
+.player[data-cue-shadow='false'] [data-part='cue'] * {
+  text-shadow:
+    -1px -1px 0 var(--cue-stroke, #000),
+    1px -1px 0 var(--cue-stroke, #000),
+    -1px 1px 0 var(--cue-stroke, #000),
+    1px 1px 0 var(--cue-stroke, #000) !important;
+}
+
+.player[data-subtitles='small'] [data-part='cue'],
+.player[data-subtitles='small'] [data-part='cue'] * {
+  font-size: calc(0.8rem * var(--cue-scale, 1)) !important;
+}
+
+.player[data-subtitles='large'] [data-part='cue'],
+.player[data-subtitles='large'] [data-part='cue'] * {
+  font-size: calc(1.15rem * var(--cue-scale, 1)) !important;
+}
+
+/* Fullscreen (the fullscreened element is .player or div[data-media-player]). */
+.player:fullscreen [data-part='cue'],
+.player :-webkit-full-screen [data-part='cue'],
+.player :fullscreen [data-part='cue'],
+.player :-webkit-full-screen [data-part='cue'],
+.player[data-fullscreen] [data-part='cue'],
+.player:fullscreen [data-part='cue'] *,
+.player :fullscreen [data-part='cue'] * {
+  font-size: calc(clamp(1.5rem, 4.4vh, 3.6rem) * var(--cue-scale, 1)) !important;
+}
+
+.player[data-subtitles='small'] :fullscreen [data-part='cue'],
+.player[data-subtitles='small'] :fullscreen [data-part='cue'] * {
+  font-size: calc(clamp(1.2rem, 3.5vh, 2.8rem) * var(--cue-scale, 1)) !important;
+}
+
+.player[data-subtitles='large'] :fullscreen [data-part='cue'],
+.player[data-subtitles='large'] :fullscreen [data-part='cue'] * {
+  font-size: calc(clamp(1.8rem, 5.4vh, 4.4rem) * var(--cue-scale, 1)) !important;
+}
+/* Toast shown when an episode ends and auto-next is enabled. */
+.player .vds-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player .vds-poster[data-hidden] {
+  display: none;
+}
+
+/* The intro animation, ported from the standalone intro page. */
+.twist-intro {
+  overflow: hidden;
+}
+
+.twist-intro-stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 2.2vh, 22px);
+  pointer-events: none;
+}
+
+.twist-intro-logo {
+  width: 40%;
+}
+
+.twist-intro-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.twist-intro-word {
+  display: flex;
+  line-height: 1;
+  font-weight: 800;
+  color: #f2f4f6;
+  white-space: nowrap;
+  font-family: Lato, sans-serif;
+}
+
+.twist-intro-ch {
+  display: inline-block;
+  overflow: hidden;
+  padding: 0.1em 0;
+}
+
+.twist-intro-ch > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+.twist-intro-beam {
+  position: absolute;
+  top: -25%;
+  left: 0;
+  width: 15%;
+  height: 150%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: blur(2px);
+  will-change: transform, opacity;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 32%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.05) 68%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Toast shown when an episode ends and auto-next is enabled. */
+.player .vds-toast {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.78);
+  color: var(--vds-clr-white);
+  font-size: 0.75rem;
+}
+
+/* "Skip intro" button, positioned bottom-right above the control bar. */
+.player .vds-skip-intro {
+  position: absolute;
+  right: 12px;
+  bottom: 56px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--vds-clr-white);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.player .vds-skip-intro:hover {
+  color: var(--vds-clr-accent);
+  border-color: var(--vds-clr-accent);
+}
+
+/* Settings menu opened from the gear button in the control bar. */
+.player .vds-settings-menu {
+  position: absolute;
+  right: 8px;
+  bottom: 46px;
+  z-index: 30;
+  width: 264px;
+  display: flex;
+  flex-direction: column;
+  max-height: 360px;
+  border-radius: 8px;
+  border: 1px solid #2b2f34;
+  background: rgba(29, 31, 34, 0.96);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.player .vds-settings-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 6px 0;
+  border-bottom: 1px solid #2b2f34;
+}
+
+.player .vds-settings-tabs button {
+  flex: 1 1 0;
+  padding: 7px 6px;
+  border-radius: 5px 5px 0 0;
+  background: transparent;
+  color: #8e8f91;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.player .vds-settings-tabs button:hover {
+  color: #cdcece;
+}
+
+.player .vds-settings-tabs button[data-active] {
+  background: #292a2d;
+  color: #fff;
+}
+
+.player .vds-settings-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px 12px 12px;
+}
+
+.player .vds-settings-search {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #3a3f45;
+  background: #232528;
+  color: #cdcece;
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.player .vds-settings-search::placeholder {
+  color: #8e8f91;
+}
+
+.player .vds-settings-search:focus {
+  outline: none;
+  border-color: var(--vds-clr-accent);
+}
+
+/* The scroll area: long subtitle lists stay compact. */
+.player .vds-settings-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4a4f55 transparent;
+}
+
+.player .vds-settings-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.player .vds-settings-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.player .vds-settings-list::-webkit-scrollbar-thumb {
+  border-radius: 99px;
+  background: #4a4f55;
+}
+
+.player .vds-settings-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: 5px;
+  background: #292a2d;
+  color: #cdcece;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.player .vds-settings-list button:hover {
+  background: #33363a;
+  color: #fff;
+}
+
+.player .vds-settings-list button[data-active],
+.player .vds-settings-list button[data-active]:hover {
+  background: var(--vds-clr-accent);
+  color: #1d1f22;
+}
+
+.player .vds-settings-hint {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: #8e8f91;
+}
+
+.player .vds-settings-list button[data-active] .vds-settings-hint {
+  color: rgba(29, 31, 34, 0.7);
+}
+
+.player .vds-settings-empty {
+  margin: 2px;
+  color: #8e8f91;
+  font-family: var(--font-body);
+  font-size: 11px;
+}
+
+/* Extra subtitle catalogues: visually separated from the stream's own tracks,
+   since they are an action ("load this list") rather than a track. */
+.player .vds-settings-source {
+  margin-top: 2px;
+  border-top: 1px solid rgba(142, 143, 145, 0.22);
+  color: var(--vds-clr-accent);
+}
+
+.player .vds-settings-source:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Episode grid: a thin scrollbar in the site colours. */
+.episode-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-twist-gray) var(--color-twist-900);
+  scrollbar-gutter: stable;
+}
+
+.episode-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.episode-scroll::-webkit-scrollbar-track {
+  border-radius: 99px;
+  background: var(--color-twist-900);
+}
+
+.episode-scroll::-webkit-scrollbar-thumb {
+  border-radius: 99px;
+  background: var(--color-twist-700);
+}
+
+.episode-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-twist-gray);
+}

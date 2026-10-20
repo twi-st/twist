@@ -1,0 +1,14 @@
+{
+  "name": "sekai",
+  "version": "0.1.0",
+  "description": "Resolve megaplay streams by MAL id (browser build; the desktop app resolves in Go).",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./browser": "./browser.js",
+    "./providers/megaplay": "./providers/megaplay.js"
+  },
+  "files": ["index.js", "browser.js", "providers", "lib", "README.md"],
+  "license": "MIT"
+}

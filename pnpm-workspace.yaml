@@ -1,0 +1,6 @@
+packages:
+  - frontend
+  - sekai
+
+patchedDependencies:
+  '@vidstack/react@1.15.6': patches/@vidstack__react@1.15.6.patch

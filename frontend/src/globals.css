@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+@theme {
+  /*
+   * Surfaces come from the appearance presets at the bottom of this file, so
+   * switching `data-theme` really re-colours the whole UI. The literals are
+   * only fallbacks for the first paint before the store writes the attribute.
+   */
+  --color-twist-950: var(--surface-sunken, #191b1e);
+  --color-twist-900: var(--surface, #1d1f22);
+  --color-twist-800: var(--surface-raised, #292a2d);
+  --color-twist-700: var(--surface-border, #2b2f34);
+  --color-twist-gray: var(--surface-gray, #4a4c4e);
+  --color-twist-white: #cdcece;
+  --color-twist-darkwhite: #d4d5d5;
+  --color-twist-lightgray: #8e8f91;
+
+  /*
+   * Accent colours are written at runtime by the settings store so the
+   * colour picker can override them; these are the defaults.
+   */
+  --color-twist-red: #d4433c;
+  --color-twist-redlight: #ff5a52;
+  --color-twist-reddark: #a82f2a;
+
+  --font-body: Lato, 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/*
+ * Appearance presets. The `data-theme` attribute is written by the settings
+ * store; every surface token above resolves through these variables.
+ */
+:root,
+[data-theme='dark'] {
+  --surface: #1d1f22;
+  --surface-raised: #292a2d;
+  --surface-sunken: #161719;
+  --surface-border: #2b2f34;
+  --surface-gray: #4a4c4e;
+}
+
+/* Softer, lighter dark — charcoal instead of near-black. */
+[data-theme='dim'] {
+  --surface: #26272c;
+  --surface-raised: #33353c;
+  --surface-sunken: #1e1f23;
+  --surface-border: #43454e;
+  --surface-gray: #5d6069;
+}
+
+/* Deep blue-black. */
+[data-theme='midnight'] {
+  --surface: #101218;
+  --surface-raised: #191c25;
+  --surface-sunken: #0a0b0f;
+  --surface-border: #232733;
+  --surface-gray: #3c4155;
+}
+
+/*
+ * Banners collapse smoothly instead of disappearing: the grid row animates
+ * from 1fr to 0fr so no height measurement is needed, and the opacity fades
+ * alongside it. The header arrow clears `data-collapsed` to open them again.
+ */
+.collapsible {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.collapsible[data-collapsed='true'] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+.collapsible > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapsible {
+    transition: none;
+  }
+}
+
+.main-content::-webkit-scrollbar {
+  width: 8px;
+  padding: 0.5rem;
+}
+.main-content::-webkit-scrollbar-track {
+  border-radius: 100vh;
+  background: #292a2d;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background: #4a4c4e;
+  border-radius: 100vh;
+}
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: #8e8f91;
+}
+
+.plus-minus {
+  --primary: var(--accent, #d4433c);
+  --secondary: #22201d;
+  --duration: 0.2s;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  perspective: 240px;
+  border-radius: 50%;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--primary);
+  background-size: 300% 300%;
+  transition: transform 0.3s;
+  transform: scale(var(--scale, 1)) translateZ(0);
+  animation: var(--name, unchecked) var(--duration) ease forwards;
+}
+.plus-minus:before,
+.plus-minus:after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: var(--height, 16px);
+  left: 6px;
+  top: var(--top, 6px);
+  background: var(--background, var(--primary));
+  animation: var(--name-icon-b, var(--name-icon, unchecked-icon))
+    var(--duration) ease forwards;
+}
+.plus-minus:before {
+  clip-path: polygon(
+    0 6px, 6px 6px, 6px 0, 10px 0, 10px 6px, 16px 6px,
+    16px 10px, 10px 10px, 10px 16px, 6px 16px, 6px 10px, 0 10px
+  );
+}
+.plus-minus:after {
+  --height: 4px;
+  --top: 12px;
+  --background: var(--secondary);
+  --name-icon-b: var(--name-icon-a, checked-icon);
+}
+.plus-minus:active {
+  --scale: 0.95;
+}
+.plus-minus:checked {
+  --name: checked;
+  --name-icon-b: checked-icon;
+  --name-icon-a: unchecked-icon;
+}
+
+@keyframes checked-icon {
+  from { transform: translateZ(12px); }
+  to { transform: translateX(16px) rotateY(90deg) translateZ(12px); }
+}
+@keyframes unchecked-icon {
+  from { transform: translateX(-16px) rotateY(-90deg) translateZ(12px); }
+  to { transform: translateZ(12px); }
+}
+@keyframes checked {
+  from {
+    background-image: radial-gradient(ellipse at center, var(--primary) 0%, var(--primary) 25%, var(--secondary) 25.1%, var(--secondary) 100%);
+    background-position: 100% 50%;
+  }
+  to {
+    background-image: radial-gradient(ellipse at center, var(--primary) 0%, var(--primary) 25%, var(--secondary) 25.1%, var(--secondary) 100%);
+    background-position: 50% 50%;
+  }
+}
+@keyframes unchecked {
+  from {
+    background-image: radial-gradient(ellipse at center, var(--secondary) 0%, var(--secondary) 25%, var(--primary) 25.1%, var(--primary) 100%);
+    background-position: 100% 50%;
+  }
+  to {
+    background-image: radial-gradient(ellipse at center, var(--secondary) 0%, var(--secondary) 25%, var(--primary) 25.1%, var(--primary) 100%);
+    background-position: 50% 50%;
+  }
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  background: transparent;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  background: var(--accent, #d4433c);
+  cursor: pointer;
+  margin-top: -4px;
+}
+input[type='range']:focus {
+  outline: none;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 3px;
+  cursor: pointer;
+  background: #2d2c29;
+  border-radius: 1.3px;
+  border: 0.2px solid #010101;
+}
+
+/* Emoji picker inside the chat composer popover. */
+.chat-emoji em-emoji-picker {
+  height: 300px !important;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Desktop window chrome
+ * Wails frameless windows drag from `--wails-draggable: drag` regions and use
+ * `--wails-non-client-region` to describe the native hit targets.
+ * ------------------------------------------------------------------------ */
+[data-desktop='true'] body {
+  overscroll-behavior: none;
+}
+
+/*
+ * App chrome, not a web page: the window must never rubber-band past its
+ * edges or drift sideways. Scroll containers opt back in with `contain`.
+ */
+html,
+body {
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
+.main-content {
+  overscroll-behavior: none;
+  overflow-x: hidden;
+}
+
+/*
+ * Shared page column. Every route uses this instead of a fixed max-width, so
+ * the "content width" appearance setting applies to the whole app and not just
+ * the home page. The value is written on <html> by the settings store.
+ */
+.content-column {
+  max-width: var(--content-width, 672px);
+}
+
+/* Inner scrollers (episode grid) keep their own wheel/touch momentum. */
+.episode-scroll {
+  overscroll-behavior: contain;
+}
+
+.titlebar {
+  -webkit-app-region: drag;
+}
+
+.titlebar button {
+  -webkit-app-region: no-drag;
+}
+
+/* Keep native text selection out of the chrome. */
+.titlebar,
+.titlebar * {
+  user-select: none;
+}

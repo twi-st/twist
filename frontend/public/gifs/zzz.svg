@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <style>
+    .z { stroke-linecap: round; stroke-linejoin: round; fill: none; animation: float 2.4s ease-in-out infinite; }
+    .z2 { animation-delay: .8s; }
+    .z3 { animation-delay: 1.6s; }
+    @keyframes float {
+      0%, 100% { opacity: .35; transform: translateY(4px); }
+      50% { opacity: 1; transform: translateY(-6px); }
+    }
+  </style>
+  <path class="z z3" d="M84 18 h20 l-20 18 h20" stroke="#60a5fa" stroke-width="5" />
+  <path class="z z2" d="M56 46 h24 l-24 22 h24" stroke="#fbbf24" stroke-width="6" />
+  <path class="z" d="M22 78 h30 l-30 28 h30" stroke="#f472b6" stroke-width="7" />
+</svg>
