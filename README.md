@@ -60,9 +60,13 @@ Download the build for your platform from the
 
 | Platform | File |
 | --- | --- |
-| Windows | `.exe` installer, or the portable `.exe` |
-| macOS | `.dmg` (Apple Silicon or Intel) |
-| Linux | `.AppImage`, `.deb`, or `.rpm` |
+| Windows | `Twist-windows-*-setup.exe` (installer), or `Twist-windows-*.exe` (portable) |
+| macOS | `Twist-macos-*.dmg`, or the zipped `.app` |
+| Linux | `Twist-*.deb`, `Twist-*.rpm`, `.AppImage`, or the plain binary |
+
+Each platform ships both architectures where they exist (amd64 and arm64). The
+Windows installer bundles the WebView2 bootstrapper, so it works on machines that
+do not have the runtime yet.
 
 The builds are unsigned. On Windows, SmartScreen may warn you about an unknown
 publisher; on macOS you may need to right-click → Open the first time. Verify the
